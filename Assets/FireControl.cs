@@ -21,14 +21,24 @@ public class FireControl : NetworkBehaviour {
     [Command]
     private void CmdShoot()
     {
+        CreateBullet();
+        RpcCreateBullet();
+    }
+
+    [ClientRpc]
+    void RpcCreateBullet()
+    {
+        if (!isServer) CreateBullet();
+    }
+
+    private void CreateBullet()
+    {
         GameObject bullet = Instantiate(bulletPrefab, bulletSpawn.transform.position, bulletSpawn.transform.rotation);
         Quaternion q = Quaternion.FromToRotation(Vector3.up, transform.forward);
         bullet.transform.rotation = q * bullet.transform.rotation;
         //bullet.GetComponent<Rigidbody>().AddForce(bulletSpawn.transform.forward * 4000);
         bullet.GetComponent<Rigidbody>().velocity = bulletSpawn.transform.forward * 75;
-        NetworkServer.Spawn(bullet);
 
         Destroy(bullet, 10.0f);
     }
-
 }
