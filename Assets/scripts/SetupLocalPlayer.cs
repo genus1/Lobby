@@ -9,6 +9,8 @@ public class SetupLocalPlayer : NetworkBehaviour {
     public Transform namePos;
     string textboxname = "";
     string colourboxname = "";
+    public Slider healthPrefab;
+    public Slider health;
 
     //Initialize sync on start
     public override void OnStartClient()
@@ -78,6 +80,23 @@ public class SetupLocalPlayer : NetworkBehaviour {
         return new Color32(r, g, b, a);
     }
 
+    //Change Health
+    [Command]
+    public void CmdChangeHealth(int hitValue)
+    {
+        healthValue += hitValue;
+        health.value = healthValue;
+    }
+
+    [SyncVar(hook = "OnChangeHealth")]
+    public int healthValue = 100;
+
+    void OnChangeHealth(int change)
+    {
+        healthValue = change;
+        health.value = healthValue;
+    }
+
     private void OnGUI()
     { 
         if (isLocalPlayer)
@@ -109,7 +128,25 @@ public class SetupLocalPlayer : NetworkBehaviour {
         nameLabel = Instantiate(namePrefab, Vector3.zero, Quaternion.identity) as Text;
         nameLabel.transform.SetParent(canvas.transform);
 
+        health = Instantiate(healthPrefab, Vector3.zero, Quaternion.identity) as Slider;
+        health.transform.SetParent(canvas.transform);
 	}
+
+    public void OnDestroy()
+    {
+        if (nameLabel != null && health != null)
+            Destroy(nameLabel.gameObject);
+        if (health != null)
+            Destroy(health.gameObject);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (isLocalPlayer && collision.gameObject.tag == "bullet")
+        {
+            CmdChangeHealth(-5);
+        }
+    }
 
     private void Update()
     {
@@ -121,16 +158,13 @@ public class SetupLocalPlayer : NetworkBehaviour {
         {
             Vector3 nameLabelPos = Camera.main.WorldToScreenPoint(namePos.position);
             nameLabel.transform.position = nameLabelPos;
+            health.transform.position = nameLabelPos + new Vector3(0, 15, 0);
         } else
         {
             nameLabel.transform.position = new Vector3(-1000, -1000, 0);
+            health.transform.position = new Vector3(-1000, -1000, 0);
         }     
     }
 
-    public void OnDestroy()
-    {
-        if (nameLabel != null)
-            Destroy(nameLabel.gameObject);
-    }
 
 }
