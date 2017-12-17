@@ -7,14 +7,21 @@ public class FireControl : NetworkBehaviour {
 
     public GameObject bulletPrefab;
     public GameObject bulletSpawn;
-	
-	// Update is called once per frame
-	void Update () {
+
+    private float lastShot, shotDelay = 2.0f;  //Delay one second between shots
+
+    // Update is called once per frame
+    void Update () {
         if (!isLocalPlayer) return;
 
         if (Input.GetKeyDown("space"))
         {
-            CmdShoot();
+            if (Time.time - lastShot > shotDelay)
+            {
+                lastShot = Time.time;
+                CmdShoot();
+            }
+            
         }
     }
 
@@ -39,6 +46,6 @@ public class FireControl : NetworkBehaviour {
         //bullet.GetComponent<Rigidbody>().AddForce(bulletSpawn.transform.forward * 4000);
         bullet.GetComponent<Rigidbody>().velocity = bulletSpawn.transform.forward * 75;
 
-        Destroy(bullet, 10.0f);
+        Destroy(bullet, 2.0f);
     }
 }

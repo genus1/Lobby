@@ -11,6 +11,8 @@ public class SetupLocalPlayer : NetworkBehaviour {
     string colourboxname = "";
     public Slider healthPrefab;
     public Slider health;
+    public GameObject explosion;
+    NetworkStartPosition[] spawnPos;
 
     //Initialize sync on start
     public override void OnStartClient()
@@ -86,6 +88,14 @@ public class SetupLocalPlayer : NetworkBehaviour {
     {
         healthValue += hitValue;
         health.value = healthValue;
+
+        if (health.value <= 0) {
+            GameObject e = Instantiate(explosion, this.transform.position, Quaternion.identity);
+            NetworkServer.Spawn(e);
+            this.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            RpcRespawn();
+            healthValue = 100;
+        }
     }
 
     [SyncVar(hook = "OnChangeHealth")]
@@ -111,6 +121,17 @@ public class SetupLocalPlayer : NetworkBehaviour {
         }
     }
 
+    [ClientRpc]
+    public void RpcRespawn()
+    {
+        if (!isLocalPlayer) return;
+
+        if(spawnPos != null && spawnPos.Length > 0)
+        {
+            this.transform.position = spawnPos[Random.Range(0, spawnPos.Length)].transform.position;
+        }
+    }
+
     // Use this for initialization
     void Start () 
 	{
@@ -130,6 +151,8 @@ public class SetupLocalPlayer : NetworkBehaviour {
 
         health = Instantiate(healthPrefab, Vector3.zero, Quaternion.identity) as Slider;
         health.transform.SetParent(canvas.transform);
+
+        spawnPos = FindObjectsOfType<NetworkStartPosition>();
 	}
 
     public void OnDestroy()
