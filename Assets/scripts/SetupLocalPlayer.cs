@@ -17,17 +17,10 @@ public class SetupLocalPlayer : NetworkBehaviour {
     //Initialize sync on start
     public override void OnStartClient()
     {
-        base.OnStartClient();
-        Invoke("UpdateStates", 1);
-    }
-
-    void UpdateStates()
-    {
         OnChangeName(pName);
         OnChangeColour(pColour);
+        base.OnStartClient();
     }
-
-    //Change Name Code
 
     [Command]
     public void CmdChangeName(string newName){
@@ -132,25 +125,28 @@ public class SetupLocalPlayer : NetworkBehaviour {
         }
     }
 
-    // Use this for initialization
-    void Start () 
-	{
-		if(isLocalPlayer)
-		{
-			GetComponent<PlayerController>().enabled = true;
-            CameraFollow360.player = this.gameObject.transform;
-		}
-		else
-		{
-			GetComponent<PlayerController>().enabled = false;
-		}
-
+    void Awake()
+    {
         GameObject canvas = GameObject.FindWithTag("MainCanvas");
         nameLabel = Instantiate(namePrefab, Vector3.zero, Quaternion.identity) as Text;
         nameLabel.transform.SetParent(canvas.transform);
 
         health = Instantiate(healthPrefab, Vector3.zero, Quaternion.identity) as Slider;
         health.transform.SetParent(canvas.transform);
+    }
+
+    // Use this for initialization
+    void Start () 
+	{
+		if(isLocalPlayer)
+		{
+			GetComponent<MyPlayerController>().enabled = true;
+            CameraFollow360.player = this.gameObject.transform;
+		}
+		else
+		{
+			GetComponent<MyPlayerController>().enabled = false;
+		}
 
         spawnPos = FindObjectsOfType<NetworkStartPosition>();
 	}
