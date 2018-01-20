@@ -117,6 +117,8 @@ public class SetupLocalPlayer : NetworkBehaviour {
     [ClientRpc]
     public void RpcRespawn()
     {
+        spawnPos = FindObjectsOfType<NetworkStartPosition>(); //fixes server respawn
+
         if (!isLocalPlayer) return;
 
         if(spawnPos != null && spawnPos.Length > 0)
@@ -147,8 +149,6 @@ public class SetupLocalPlayer : NetworkBehaviour {
 		{
 			GetComponent<MyPlayerController>().enabled = false;
 		}
-
-        spawnPos = FindObjectsOfType<NetworkStartPosition>();
 	}
 
     public void OnDestroy()
